@@ -19,6 +19,25 @@ const { width, height } = Dimensions.get("screen");
 import wordleImage from "../../assets/images/wordle.png";
 import hittheisland from "../../assets/images/hit.jpg";
 import spinandwin from "../../assets/images/Spin.png";
+import coin from "../../assets/images/coin.png";
+import {
+  BannerAd,
+  BannerAdSize,
+  TestIds,
+  RewardedInterstitialAd,
+  RewardedAdEventType,
+  InterstitialAd,
+  AdEventType,
+} from "react-native-google-mobile-ads";
+import { useState, useEffect } from "react";
+
+//intertial ads
+
+const adUnitId = "ca-app-pub-7891313948616469/2419904269";
+
+const insterstitial = InterstitialAd.createForAdRequest(adUnitId, {
+  requestNonPersonalizedAdsOnly: true,
+});
 
 const data = [
   {
@@ -36,12 +55,51 @@ const data = [
     image: hittheisland,
     how: "As simple as it sounds, Hit The Island with the ball and score points. But wait, there is a catch! The ball speeds up. It can get cloned.y",
   },
+  {
+    title: "Tap To Earn",
+    image: coin,
+    how: "JUST TAP",
+  },
 ];
 
 const imageW = width * 0.7;
 const imageH = imageW * 1.54;
 
 export default () => {
+  const [interstitialLoaded, setInterstitialLoaded] = useState(false);
+
+  const loadInterstitial = () => {
+    const unsubscribeLoaded = insterstitial.addAdEventListener(
+      AdEventType.LOADED,
+      () => {
+        setInterstitialLoaded(true);
+      }
+    );
+
+    const unsubscribeClosed = insterstitial.addAdEventListener(
+      AdEventType.CLOSED,
+      () => {
+        setInterstitialLoaded(false);
+      }
+    );
+    insterstitial.load();
+    return () => {
+      unsubscribeClosed();
+      unsubscribeLoaded();
+    };
+  };
+  useEffect(() => {
+    const unsubscribeInterstitialEvents = loadInterstitial();
+
+    return () => {
+      unsubscribeInterstitialEvents();
+    };
+  }, []);
+
+  if (interstitialLoaded) {
+    insterstitial.show();
+  }
+
   const scrollX = React.useRef(new Animated.Value(0)).current;
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>
@@ -113,11 +171,14 @@ export default () => {
               <TouchableOpacity
                 style={{ elevation: 10 }}
                 onPress={() => {
+                  if (index == 3) {
+                    router.navigate("tap");
+                  }
                   if (index == 2) {
                     router.navigate("PingPong");
                   }
                   if (index == 1) {
-                    router.navigate("tap");
+                    router.navigate("Spin");
                   }
                   if (index == 0) {
                     router.navigate("memory");

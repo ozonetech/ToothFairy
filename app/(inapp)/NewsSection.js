@@ -10,6 +10,7 @@ import {
   FlatList,
   StyleSheet,
   RefreshControl,
+  Button,
 } from "react-native";
 import { BookmarkSquareIcon } from "react-native-heroicons/solid";
 import {
@@ -18,6 +19,20 @@ import {
 } from "react-native-responsive-screen";
 import { router } from "expo-router";
 import { FlashList } from "@shopify/flash-list";
+import {
+  BannerAd,
+  BannerAdSize,
+  TestIds,
+  RewardedInterstitialAd,
+  RewardedAdEventType,
+  InterstitialAd,
+  AdEventType,
+} from "react-native-google-mobile-ads";
+
+// banner ads
+// const tadUnitId = __DEV__
+//   ? TestIds.ADAPTIVE_BANNER
+//   : "ca-app-pub-7891313948616469/9710919546";
 
 const NewsSection = ({ newsProps }) => {
   const navigation = useNavigation();
@@ -126,33 +141,30 @@ const NewsSection = ({ newsProps }) => {
             style={styles.newsImageContainer}
             className="items-start justify-start w-[20%]"
           >
-            <Image
-              source={{
-                uri:
-                  item.urlToImage ||
-                  "https://images.unsplash.com/photo-1495020689067-958852a7765e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bmV3c3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60",
-              }}
-              style={[
-                styles.newsImage,
-                {
-                  width: wp("90%"),
-                  height: hp("30%"),
-                  alignSelf: "center",
-                  marginBottom: 10,
-                  borderRadius: 10,
-                },
-              ]}
-              resizeMode="cover"
-              className="rounded-lg"
-            />
+            {item.urlToImage && (
+              <Image
+                source={{
+                  uri: item.urlToImage,
+                }}
+                style={[
+                  styles.newsImage,
+                  {
+                    width: wp("90%"),
+                    height: hp("30%"),
+                    alignSelf: "center",
+                    marginBottom: 10,
+                    borderRadius: 10,
+                  },
+                ]}
+                resizeMode="cover"
+                className="rounded-lg"
+              />
+            )}
           </View>
 
           {/* Content */}
 
-          <View
-            style={styles.newsContent}
-            className="w-[70%] pl-4 justify-center space-y-1"
-          >
+          <View style={styles.newContent}>
             {/* Author */}
             <Text style={{ fontWeight: "bold", fontSize: hp(2) }}>
               {item?.author?.length > 20
@@ -197,17 +209,29 @@ const NewsSection = ({ newsProps }) => {
       return;
     }
     setLoading(true);
-    const newsData = await fetchRecommendedNews();
-    // const ncoinsData = await getMarketDataNaira();
-    newsProps = newsData;
-    // setnCoins(ncoinsData);
-    // console.log(newsProps);
-    setLoading(false);
+    try {
+      const newsData = await fetchRecommendedNews();
+      newsProps = newsData;
+    } catch (error) {
+      // Handle Axios error (e.g., when reaching request limit)
+      console.error("Axios Error:", error);
+      if (error.response && error.response.status === 429) {
+        // Display user-friendly error message
+        Alert.alert(
+          "Too Many Requests",
+          "Sorry, we've reached the request limit. Please try again later."
+        );
+      } else {
+        // Handle other errors
+        Alert.alert(
+          "Error",
+          "Failed to fetch news data. Please try again later."
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
   };
-
-  // useEffect(() => {
-  //   refetchCoins();
-  // }, []);
 
   return (
     <View style={{ height: "100%", width: "100%" }}>
@@ -241,35 +265,8 @@ const styles = StyleSheet.create({
     width: "90%",
     alignSelf: "center",
     flex: 1,
+    marginTop: 20,
   },
   newContent: { marginLeft: 10, marginVertical: 10 },
   bookmark: { bottom: hp(15), marginLeft: "auto" },
 });
-// useEffect(() => {
-
-//   const loadSavedArticles = async () => {
-//     try {
-//       const savedArticles = await AsyncStorage.getItem("savedArticles");
-//       const savedArticlesArray = savedArticles
-//         ? JSON.parse(savedArticles)
-//         : [];
-
-//       // Check if each URL in 'urlList' exists in the bookmarked list
-//       const isArticleBookmarkedList = urlList.map((url) =>
-//         savedArticlesArray.some((savedArticle) => savedArticle.url === url)
-//       );
-
-//       // Set the bookmark status for all items based on the loaded data
-//       setBookmarkStatus(isArticleBookmarkedList);
-//       console.log("Check if the current article is in bookmarks");
-//     } catch (error) {
-//       console.log("Error Loading Saved Articles", error);
-//     }
-//   };
-
-//   loadSavedArticles();
-// }, [urlList]);
-
-// contentContainerStyle={{
-//         paddingBottom: hp(110),
-//       }}

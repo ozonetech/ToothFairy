@@ -133,8 +133,8 @@ export default function _layout() {
           <Drawer.Screen
             name="News"
             options={{
-              drawerLabel: "News",
-              headerTitle: "News Extra",
+              drawerLabel: "News HeadLine",
+              headerTitle: "Today HeadLines",
               headerRight: () => (
                 <TouchableOpacity
                   onPress={() => router.navigate("home")}
@@ -215,12 +215,12 @@ export default function _layout() {
               ),
             }}
           ></Drawer.Screen>
-          <Drawer.Screen
+          {/* <Drawer.Screen
             name="NewsDetails"
             options={{
               drawerItemStyle: { display: "none" },
             }}
-          ></Drawer.Screen>
+          ></Drawer.Screen> */}
         </Drawer>
       </GestureHandlerRootView>
     </QueryClientProvider>

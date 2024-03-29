@@ -35,13 +35,26 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { Uploading } from "../../components/Uploading";
 import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-// import {
-//   BannerAd,
-//   BannerAdSize,
-//   TestIds,
-// } from "react-native-google-mobile-ads";
+import * as Updates from "expo-updates";
 
 const home = () => {
+  async function onFetchUpdateAsync() {
+    try {
+      const update = await Updates.checkForUpdateAsync();
+
+      if (update.isAvailable) {
+        await Updates.fetchUpdateAsync();
+        await Updates.reloadAsync();
+      }
+    } catch (error) {
+      // You can also add an alert() to see the error message in case of an error when fetching updates.
+      console.log(`Error fetching latest Expo update: ${error}`);
+    }
+  }
+  useEffect(() => {
+    onFetchUpdateAsync();
+  }, []);
+
   const clearAsyncStorage = async () => {
     try {
       await AsyncStorage.clear();
@@ -297,33 +310,7 @@ const home = () => {
 
         {loading ? (
           <SkeletonLoading />
-        ) : news.length > 0 ? (
-          // Display news content here
-          // For example:
-          news.map((item, index) => (
-            <View key={index}>
-              <FlatList
-                data={news}
-                renderItem={({ item }) => <NewsField item={item}></NewsField>}
-                keyExtractor={(item) => item.id}
-                refreshControl={
-                  <RefreshControl
-                    style={{
-                      flex: 1,
-                      width: "100%",
-                      height: "100%",
-                      zIndex: 100,
-                      backgroundColor: "red",
-                    }}
-                    refreshing={rloading}
-                    tintColor="white"
-                    onRefresh={fetchData}
-                  />
-                }
-              />
-            </View>
-          ))
-        ) : (
+        ) : !user || !news.length ? (
           <View
             style={{
               justifyContent: "center",
@@ -357,6 +344,32 @@ const home = () => {
               </View>
             </TouchableOpacity>
           </View>
+        ) : (
+          // Display news content here
+          // For example:
+          news.map((item, index) => (
+            <View key={index}>
+              <FlatList
+                data={news}
+                renderItem={({ item }) => <NewsField item={item}></NewsField>}
+                keyExtractor={(item) => item.id}
+                refreshControl={
+                  <RefreshControl
+                    style={{
+                      flex: 1,
+                      width: "100%",
+                      height: "100%",
+                      zIndex: 100,
+                      backgroundColor: "red",
+                    }}
+                    refreshing={rloading}
+                    tintColor="white"
+                    onRefresh={fetchData}
+                  />
+                }
+              />
+            </View>
+          ))
         )}
 
         <View

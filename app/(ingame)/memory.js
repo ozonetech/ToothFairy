@@ -29,6 +29,15 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useAuth } from "@/context/authContext";
 import LottieView from "lottie-react-native";
 import { router } from "expo-router";
+import {
+  BannerAd,
+  BannerAdSize,
+  TestIds,
+  RewardedInterstitialAd,
+  RewardedAdEventType,
+  InterstitialAd,
+  AdEventType,
+} from "react-native-google-mobile-ads";
 
 const App = observer(() => {
   const { updateCoin, user } = useAuth();
@@ -38,6 +47,60 @@ const App = observer(() => {
   const { boardSize } = useCardSize();
   const [isLoading, setIsLoading] = useState(false);
   const [display, setDisplay] = useState("none");
+  const [rewardInterstitialLoaded, setrewardIntertialLoaded] = useState(false);
+
+  useEffect(() => {
+    // Update display based on isLoading state
+    setDisplay(isLoading ? "flex" : "none");
+  }, [isLoading]);
+
+  // Rewarded Ads
+
+  const radUnitId = "ca-app-pub-7891313948616469/7356218948";
+
+  const rewardedInterstitial = RewardedInterstitialAd.createForAdRequest(
+    radUnitId,
+    {
+      requestNonPersonalizedAdsOnly: true,
+    }
+  );
+
+  const loadRewardInterstitial = () => {
+    try {
+      const unsubscribeLoaded = rewardedInterstitial.addAdEventListener(
+        RewardedAdEventType.LOADED,
+        () => {
+          setrewardIntertialLoaded(true);
+        }
+      );
+
+      const unsubscribeEarned = rewardedInterstitial.addAdEventListener(
+        RewardedAdEventType.EARNED_REWARD,
+        (reward) => {
+          console.log(`User earned reward of ${reward.amount} ${reward.type}`);
+          setrewardIntertialLoaded(true);
+        }
+      );
+
+      const unsubscribeClosed = rewardedInterstitial.addAdEventListener(
+        AdEventType.CLOSED,
+        () => {
+          setrewardIntertialLoaded(false);
+          rewardedInterstitial.load();
+        }
+      );
+
+      rewardedInterstitial.load();
+
+      return () => {
+        unsubscribeClosed();
+        unsubscribeEarned();
+        unsubscribeLoaded();
+      };
+    } catch (error) {
+      console.error("Error loading rewarded interstitial:", error);
+    }
+  };
 
   useEffect(() => {
     // Update display based on isLoading state
@@ -45,7 +108,11 @@ const App = observer(() => {
   }, [isLoading]);
 
   useEffect(() => {
-    if (game.isCompleted) {
+    return loadRewardInterstitial();
+  }, []);
+
+  useEffect(() => {
+    if (game.isCompleted && rewardInterstitialLoaded) {
       setIsLoading(true);
       updateCoin(100).then(setIsLoading(false));
     }
@@ -63,6 +130,7 @@ const App = observer(() => {
     marginTop: isPortrait ? 12 : 3,
     marginBottom: isPortrait ? 15 : 2,
   };
+  const tadUnitId = "ca-app-pub-7891313948616469/9710919546";
 
   React.useEffect(() => {
     game.startGame();
@@ -124,7 +192,15 @@ const App = observer(() => {
           </View>
         </View>
         <Board cards={game.cards} />
+
         <View style={styles.spaceBottom} />
+        <View style={{ top: -5 }}>
+          <BannerAd
+            unitId={tadUnitId}
+            size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+            requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+          />
+        </View>
       </View>
       <View
         style={{

@@ -1,4 +1,11 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Linking,
+} from "react-native";
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -10,11 +17,29 @@ import {
 } from "react-native-responsive-screen";
 import { router } from "expo-router";
 import colors from "./../../constants/Colors";
+import { FontAwesome, Foundation } from "@expo/vector-icons";
 
 const CoinPageDetails = () => {
   const { logout, user } = useAuth();
   const handleLogout = async () => {
     await logout();
+  };
+
+  console.log(user);
+  const message = `My Username is  ${user.username}, My user ID is ${user.uid}, and My Email is ${user.email}. I want to Exchange my Coin`;
+  const encodedMessage = encodeURIComponent(message);
+  const whatsappUrl = `whatsapp://send?phone=+2347026178387&text=${encodedMessage}`;
+
+  const SocialLink = ({ url, text }) => {
+    const handlePress = () => {
+      Linking.openURL(url);
+    };
+
+    return (
+      <TouchableOpacity style={styles.socialLink} onPress={handlePress}>
+        <Text style={styles.link}>{text}</Text>
+      </TouchableOpacity>
+    );
   };
   return (
     <View style={styles.profileContainer}>
@@ -80,9 +105,12 @@ const CoinPageDetails = () => {
                 </Text>
               </View>
             </View>
-            <TouchableOpacity onPress={() => router.navigate("exchange")}>
-              <Text>Exchange your coin</Text>
-            </TouchableOpacity>
+            <View style={[styles.social1, { backgroundColor: "#C27B05" }]}>
+              <SocialLink
+                url={whatsappUrl}
+                text="Exchange Your Coin"
+              ></SocialLink>
+            </View>
           </View>
         </View>
       </View>
@@ -154,5 +182,32 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     elevation: 10,
     shadowRadius: 2,
+  },
+  social1: {
+    flexDirection: "row",
+    backgroundColor: "red",
+    padding: 10,
+    marginVertical: 10,
+    alignItems: "center",
+  },
+  icon2: {
+    backgroundColor: "red",
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "absolute",
+    left: -10,
+  },
+  socialLink: {
+    color: "#fff",
+    alignItems: "center",
+    width: "100%",
+  },
+  link: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 15,
   },
 });

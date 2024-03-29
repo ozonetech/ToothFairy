@@ -5,6 +5,7 @@ import {
   Button,
   StyleSheet,
   Text,
+  TouchableOpacity,
   useWindowDimensions,
   View,
 } from "react-native";
@@ -26,6 +27,16 @@ import {
 } from "react-native-gesture-handler";
 import { widthPercentageToDP as wp } from "react-native-responsive-screen";
 import { useAuth } from "@/context/authContext";
+import { router } from "expo-router";
+import {
+  BannerAd,
+  BannerAdSize,
+  TestIds,
+  RewardedInterstitialAd,
+  RewardedAdEventType,
+  InterstitialAd,
+  AdEventType,
+} from "react-native-google-mobile-ads";
 
 const FPS = 60;
 const DELTA = 500 / FPS;
@@ -41,6 +52,15 @@ const normalizeVector = (vector) => {
     y: vector.y / magnitude,
   };
 };
+
+const radUnitId = "ca-app-pub-7891313948616469/7356218948";
+
+const rewardedInterstitial = RewardedInterstitialAd.createForAdRequest(
+  radUnitId,
+  {
+    requestNonPersonalizedAdsOnly: true,
+  }
+);
 
 export default function Game() {
   const { height, width } = useWindowDimensions();
@@ -59,9 +79,7 @@ export default function Game() {
 
   const targetPositionX = useSharedValue(width / 2);
   const targetPositionY = useSharedValue(height / 2);
-  const direction = useSharedValue(
-    normalizeVector({ x: Math.random(), y: Math.random() })
-  );
+  const direction = useSharedValue(normalizeVector({ x: 1, y: 1 }));
   const playerPos = useSharedValue({ x: width / 4, y: height - 100 });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -89,6 +107,59 @@ export default function Game() {
     }
   };
 
+  // Rewarded Ads
+
+  const loadRewardInterstitial = () => {
+    try {
+      const unsubscribeLoaded = rewardedInterstitial.addAdEventListener(
+        RewardedAdEventType.LOADED,
+        () => {
+          setIsLoading(false);
+        }
+      );
+
+      const unsubscribeEarned = rewardedInterstitial.addAdEventListener(
+        RewardedAdEventType.EARNED_REWARD,
+        (reward) => {
+          console.log(`User earned reward of ${reward.amount} ${reward.type}`);
+          setIsLoading(true);
+        }
+      );
+
+      const unsubscribeClosed = rewardedInterstitial.addAdEventListener(
+        AdEventType.CLOSED,
+        () => {
+          setIsLoading(false);
+          rewardedInterstitial.load();
+        }
+      );
+
+      rewardedInterstitial.load();
+
+      return () => {
+        unsubscribeClosed();
+        unsubscribeEarned();
+        unsubscribeLoaded();
+      };
+    } catch (error) {
+      console.error("Error loading rewarded interstitial:", error);
+    }
+  };
+
+  useEffect(() => {
+    // Update display based on isLoading state
+    setDisplay(isLoading ? "flex" : "none");
+  }, [isLoading]);
+
+  useEffect(() => {
+    return loadRewardInterstitial();
+  }, []);
+
+  // banner ads
+  const tadUnitId = __DEV__
+    ? "ca-app-pub-8184917210189339/4699423560"
+    : TestIds.ADAPTIVE_BANNER;
+
   //   // Call the function to update the coin before the game is over
   //
   // }, [gameOver, coinUpdatedAfterGameOver, score]); // Add dependencies to avoid unnecessary updates
@@ -106,6 +177,23 @@ export default function Game() {
     coin = score * 10;
   }
 
+  const updatingCoin = () => {
+    setIsLoading(true);
+    try {
+      rewardedInterstitial.show().then(() => {
+        updateCoin(coin).then(() => {
+          setIsLoading(false);
+        });
+      });
+      // updateCoin(coin).then(() => {
+      //   rewardedInterstitial.show();
+      //   setIsLoading(false);
+      // });
+    } catch (error) {
+      setIsLoading(false);
+    }
+  };
+
   const update = () => {
     let nextPos = getNextPos(direction.value);
     let newDirection = direction.value;
@@ -114,14 +202,7 @@ export default function Game() {
     if (nextPos.y > height - BALL_WIDTH) {
       setGameOver(true);
       setIsLoading(true);
-
-      updateCoin(coin)
-        .then(() => {
-          setIsLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error updating coin before game over:", error);
-        });
+      updatingCoin();
     }
 
     if (nextPos.y < 0) {
@@ -250,6 +331,20 @@ export default function Game() {
         <View style={styles.gameOverContainer}>
           <Text style={styles.gameOver}>Game over</Text>
           <Button title="Restart" onPress={restartGame} />
+          <TouchableOpacity
+            style={{
+              width: "100%",
+              backgroundColor: "blue",
+              height: 30,
+              elevation: 10,
+              marginVertical: 20,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onPress={() => router.navigate("game")}
+          >
+            <Text style={{ color: "#fff", fontWeight: "bold" }}>Go Back</Text>
+          </TouchableOpacity>
         </View>
       )}
 
@@ -275,32 +370,52 @@ export default function Game() {
           position: "absolute",
           width: "100%",
           height: "100%",
-          marginTop: 120,
-          backgroundColor: "rgba(0, 0, 0, 0.1)",
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
           zIndex: 1000,
           alignItems: "center",
           justifyContent: "center",
           display: display,
         }}
       >
-        <LottieView
-          style={{ height: 200, width: 200 }}
-          source={require("../../assets/lottie/coinLoading.json")}
-          autoPlay
-          loop
-        />
-        <Text
-          style={{
-            fontSize: 25,
-            fontWeight: "bold",
-            color: "white",
-          }}
-        >
-          Please Wait ...
-        </Text>
-        <Text style={{ color: "#fff" }}>
-          Adding your Earnings to your wallet
-        </Text>
+        <View style={{ width: "100%", alignItems: "center" }}>
+          <LottieView
+            style={{ height: 200, width: 200 }}
+            source={require("../../assets/lottie/coinLoading.json")}
+            autoPlay
+            loop
+          />
+          <Text
+            style={{
+              fontSize: 25,
+              fontWeight: "bold",
+              color: "white",
+            }}
+          >
+            Please Wait ...
+          </Text>
+          <Text style={{ color: "#fff" }}>
+            Adding your Earnings to your wallet
+          </Text>
+          <Text
+            style={{ color: "yellow", marginVertical: 10, fontWeight: "bold" }}
+          >
+            Wait Or{" "}
+          </Text>
+          <TouchableOpacity
+            style={{
+              width: "80%",
+              backgroundColor: "red",
+              height: 30,
+              elevation: 10,
+              marginVertical: 10,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onPress={() => router.navigate("game")}
+          >
+            <Text style={{ color: "#fff", fontWeight: "bold" }}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Player */}

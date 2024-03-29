@@ -18,12 +18,13 @@ import {
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyCBoemwbCPIHqo5ioM698WFijcXh6RzizY",
-  authDomain: "toothfairy-a96ca.firebaseapp.com",
-  projectId: "toothfairy-a96ca",
-  storageBucket: "toothfairy-a96ca.appspot.com",
-  messagingSenderId: "539869846166",
-  appId: "1:539869846166:web:5270550665198357a600b7",
+  apiKey: "AIzaSyDD3B0YjiCZj21T1ZzrFlUjQw7bNBo83Y8",
+  authDomain: "toothfairy-963cf.firebaseapp.com",
+  projectId: "toothfairy-963cf",
+  storageBucket: "toothfairy-963cf.appspot.com",
+  messagingSenderId: "233320083709",
+  appId: "1:233320083709:web:638e8a0ff28c91b334ce94",
+  measurementId: "G-T4HDG9M7C4",
 };
 
 // Initialize Firebase

@@ -70,7 +70,15 @@ const signUp = () => {
     setLoading(false);
 
     if (!response.success) {
-      Alert.alert("sign Up", response.msg);
+      const errorCode = response.msg;
+      console.log(response.msg);
+      Alert.alert("Sign Up", response.msg);
+      if (errorCode === "auth/username-taken") {
+        Alert.alert(
+          "Username Taken",
+          "The username you entered is already in use. Please choose a different username."
+        );
+      }
     }
   };
 

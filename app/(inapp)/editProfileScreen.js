@@ -138,14 +138,6 @@ const EditProfile = () => {
 
   // when edit image button clicked in editprofile screen
   // checks/asks for permission before opening the modal to change the image
-  const editProfileImage = async () => {
-    if (permission?.status !== ImagePicker.PermissionStatus.GRANTED) {
-      requestPermission();
-      showModal();
-    } else {
-      showModal();
-    }
-  };
 
   const RenderInner = () => (
     <View style={styles.panel}>
@@ -195,6 +187,7 @@ const EditProfile = () => {
       )}
     </View>
   );
+  const handleSubmit = () => {};
 
   return (
     <>
@@ -277,8 +270,8 @@ const EditProfile = () => {
               style={styles.commandButton}
               onPress={() => {
                 setSubmitLoading(true);
+
                 updateProfileDetails(name, email);
-                setSubmitLoading(false);
               }}
             >
               <Text style={styles.panelButtonTitle}>Submit</Text>

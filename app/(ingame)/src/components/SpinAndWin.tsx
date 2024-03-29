@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import Wheel from "./Wheel";
@@ -20,25 +20,28 @@ import Colors from "@/constants/Colors";
 import { useAuth } from "@/context/authContext";
 import LottieView from "lottie-react-native";
 
-// import {
-//   BannerAd,
-//   BannerAdSize,
-//   TestIds,
-//   RewardedInterstitialAd,
-//   RewardedAdEventType,
-//   InterstitialAd,
-//   AdEventType,
-// } from "react-native-google-mobile-ads";
+import {
+  BannerAd,
+  BannerAdSize,
+  TestIds,
+  RewardedInterstitialAd,
+  RewardedAdEventType,
+  InterstitialAd,
+  AdEventType,
+} from "react-native-google-mobile-ads";
+import { router } from "expo-router";
 
-const segments = [100000, 1, 4, 50, 30, 20, 600, 2000, 30, 0];
-const initilaBalance = "1.7";
+const segments = [1000, 1, 4, 50, 30, 20, 600, 200, 30, 0];
+const initilaBalance = "1";
 
-// const rewardedInterstitial = RewardedInterstitialAd.createForAdRequest(
-//   TestIds.REWARDED_INTERSTITIAL,
-//   {
-//     requestNonPersonalizedAdsOnly: true,
-//   }
-// );
+const radUnitId = "ca-app-pub-7891313948616469/7356218948";
+
+const rewardedInterstitial = RewardedInterstitialAd.createForAdRequest(
+  radUnitId,
+  {
+    requestNonPersonalizedAdsOnly: true,
+  }
+);
 
 const SpinAndWin = () => {
   const insets = useSafeAreaInsets();
@@ -53,51 +56,54 @@ const SpinAndWin = () => {
 
   // Rewarded Ads
 
-  // const loadRewardInterstitial = () => {
-  //   try {
-  //     const unsubscribeLoaded = rewardedInterstitial.addAdEventListener(
-  //       RewardedAdEventType.LOADED,
-  //       () => {
-  //         setIsLoading(false);
-  //       }
-  //     );
+  const loadRewardInterstitial = () => {
+    try {
+      const unsubscribeLoaded = rewardedInterstitial.addAdEventListener(
+        RewardedAdEventType.LOADED,
+        () => {
+          setIsLoading(false);
+        }
+      );
 
-  //     const unsubscribeEarned = rewardedInterstitial.addAdEventListener(
-  //       RewardedAdEventType.EARNED_REWARD,
-  //       (reward) => {
-  //         console.log(`User earned reward of ${reward.amount} ${reward.type}`);
-  //         setIsLoading(true);
-  //       }
-  //     );
+      const unsubscribeEarned = rewardedInterstitial.addAdEventListener(
+        RewardedAdEventType.EARNED_REWARD,
+        (reward) => {
+          console.log(`User earned reward of ${reward.amount} ${reward.type}`);
+          setIsLoading(true);
+        }
+      );
 
-  //     const unsubscribeClosed = rewardedInterstitial.addAdEventListener(
-  //       AdEventType.CLOSED,
-  //       () => {
-  //         setIsLoading(false);
-  //         rewardedInterstitial.load();
-  //       }
-  //     );
+      const unsubscribeClosed = rewardedInterstitial.addAdEventListener(
+        AdEventType.CLOSED,
+        () => {
+          setIsLoading(false);
+          rewardedInterstitial.load();
+        }
+      );
 
-  //     rewardedInterstitial.load();
+      rewardedInterstitial.load();
 
-  //     return () => {
-  //       unsubscribeClosed();
-  //       unsubscribeEarned();
-  //       unsubscribeLoaded();
-  //     };
-  //   } catch (error) {
-  //     console.error("Error loading rewarded interstitial:", error);
-  //   }
-  // };
+      return () => {
+        unsubscribeClosed();
+        unsubscribeEarned();
+        unsubscribeLoaded();
+      };
+    } catch (error) {
+      console.error("Error loading rewarded interstitial:", error);
+    }
+  };
 
   useEffect(() => {
     // Update display based on isLoading state
     setDisplay(isLoading ? "flex" : "none");
   }, [isLoading]);
 
-  // useEffect(() => {
-  //   return loadRewardInterstitial();
-  // }, []);
+  useEffect(() => {
+    return loadRewardInterstitial();
+  }, []);
+
+  // banner ads
+  const tadUnitId = "ca-app-pub-7891313948616469/9710919546";
 
   const handleWheelEnd = (value: number) => {
     const updatedBalance = value * Number(initilaBalance);
@@ -106,7 +112,7 @@ const SpinAndWin = () => {
     setIsLoading(true);
 
     updateCoin(coin).then(() => {
-      // rewardedInterstitial.show();
+      rewardedInterstitial.show();
       setIsLoading(false);
     });
 
@@ -116,7 +122,7 @@ const SpinAndWin = () => {
     amount.value = withTiming(updatedBalance, { duration: 800 });
   };
   const handleOnSpin = () => {
-    amount.value = 1.7; //set back to initial value
+    amount.value = 1; //set back to initial value
     labelOpacity.value = 0;
   };
 
@@ -160,6 +166,25 @@ const SpinAndWin = () => {
         <Text style={{ color: "#fff" }}>
           Adding your Earnings to your wallet
         </Text>
+        <Text
+          style={{ color: "yellow", marginVertical: 10, fontWeight: "bold" }}
+        >
+          Wait Or{" "}
+        </Text>
+        <TouchableOpacity
+          style={{
+            width: "80%",
+            backgroundColor: "red",
+            height: 30,
+            elevation: 10,
+            marginVertical: 10,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onPress={() => router.navigate("game")}
+        >
+          <Text style={{ color: "#fff", fontWeight: "bold" }}>Go Back</Text>
+        </TouchableOpacity>
       </View>
       <Header />
       <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -210,6 +235,13 @@ const SpinAndWin = () => {
         walletBalance={walletBalance}
       />
       <Wheel segments={segments} onEnd={handleWheelEnd} onSpin={handleOnSpin} />
+      <View style={{ top: -5 }}>
+        <BannerAd
+          unitId={tadUnitId}
+          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+          requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+        />
+      </View>
     </LinearGradient>
   );
 };

@@ -4,7 +4,61 @@ import CoinItem from "../../components/coins/CoinItem";
 import { getMarketData, getMarketDataNaira } from "../src/services/requests";
 import { FlashList } from "@shopify/flash-list";
 
+import {
+  BannerAd,
+  BannerAdSize,
+  TestIds,
+  RewardedInterstitialAd,
+  RewardedAdEventType,
+  InterstitialAd,
+  AdEventType,
+} from "react-native-google-mobile-ads";
+
+// banner ads
+const tadUnitId = "ca-app-pub-7891313948616469/9710919546";
+
+//intertial ads
+
+const adUnitId = "ca-app-pub-7891313948616469/2419904269";
+
+const insterstitial = InterstitialAd.createForAdRequest(adUnitId, {
+  requestNonPersonalizedAdsOnly: true,
+});
+
 const HomeScreen = () => {
+  const [interstitialLoaded, setInterstitialLoaded] = useState(false);
+
+  const loadInterstitial = () => {
+    const unsubscribeLoaded = insterstitial.addAdEventListener(
+      AdEventType.LOADED,
+      () => {
+        setInterstitialLoaded(true);
+      }
+    );
+
+    const unsubscribeClosed = insterstitial.addAdEventListener(
+      AdEventType.CLOSED,
+      () => {
+        setInterstitialLoaded(false);
+      }
+    );
+    insterstitial.load();
+    return () => {
+      unsubscribeClosed();
+      unsubscribeLoaded();
+    };
+  };
+  useEffect(() => {
+    const unsubscribeInterstitialEvents = loadInterstitial();
+
+    return () => {
+      unsubscribeInterstitialEvents();
+    };
+  }, []);
+
+  if (interstitialLoaded) {
+    insterstitial.show();
+  }
   const [coins, setCoins] = useState([]);
   const [loading, setLoading] = useState(false);
   const [ncoins, setnCoins] = useState([]);
@@ -26,7 +80,7 @@ const HomeScreen = () => {
       return;
     }
     setLoading(true);
-    const coinsData = await getMarketDataNaira();
+    const coinsData = await getMarketData();
     // const ncoinsData = await getMarketDataNaira();
     setCoins(coinsData);
     // setnCoins(ncoinsData);
@@ -52,6 +106,13 @@ const HomeScreen = () => {
           />
         }
       />
+      <View style={{}}>
+        <BannerAd
+          unitId={tadUnitId}
+          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+          requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+        />
+      </View>
     </View>
   );
 };

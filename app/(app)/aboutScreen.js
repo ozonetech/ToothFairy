@@ -4,6 +4,7 @@ import {
   View,
   Linking,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
 import React, { memo } from "react";
 import {
@@ -41,72 +42,77 @@ const aboutScreen = () => {
   //   };
 
   return (
-    <View style={styles.aboutContainer}>
-      <View style={styles.box}>
-        <Text style={styles.header}>Founder</Text>
-        <Text style={styles.paragraph}>
-          The toothfairy coin token is powered by Fejugga Tech. whose founder
-          and CEO is Olufemi Ajibaiye a innovator at heart.
-        </Text>
-      </View>
-      <View style={styles.box}>
-        <Text style={styles.header}>Safe investment</Text>
-        <Text style={styles.paragraph}>
-          Liquidity is locked for good immediately after launch. Tokens were
-          sent to burnt address which means the liquidity could never be pulled
-          out to ensure investors peace of mind.
-        </Text>
-      </View>
-      <View
-        style={[styles.social1, { backgroundColor: "#CD564D", marginTop: 30 }]}
-      >
-        <View style={[styles.icon, { backgroundColor: "#CD564D" }]}>
-          <FontAwesome
-            name="envelope"
-            size={24}
-            color="#CD564D"
-            style={{ backgroundColor: "#fff", padding: 5, borderRadius: 20 }}
+    <ScrollView style={{ height: hp("90%") }}>
+      <View style={styles.aboutContainer}>
+        <View style={styles.box}>
+          <Text style={styles.header}>Founder</Text>
+          <Text style={styles.paragraph}>
+            The toothfairy coin token is powered by Fejugga Tech. whose founder
+            and CEO is Olufemi Ajibaiye a innovator at heart.
+          </Text>
+        </View>
+        <View style={styles.box}>
+          <Text style={styles.header}>Safe investment</Text>
+          <Text style={styles.paragraph}>
+            Liquidity is locked for good immediately after launch. Tokens were
+            sent to burnt address which means the liquidity could never be
+            pulled out to ensure investors peace of mind.
+          </Text>
+        </View>
+        <View
+          style={[
+            styles.social1,
+            { backgroundColor: "#CD564D", marginTop: 30 },
+          ]}
+        >
+          <View style={[styles.icon, { backgroundColor: "#CD564D" }]}>
+            <FontAwesome
+              name="envelope"
+              size={24}
+              color="#CD564D"
+              style={{ backgroundColor: "#fff", padding: 5, borderRadius: 20 }}
+            />
+          </View>
+          <SocialLink
+            url="mailto:fejuggayoungstars@gmail.com"
+            text="fejuggayoungstars@gmail.com"
           />
         </View>
-        <SocialLink
-          url="mailto:fejuggayoungstars@gmail.com"
-          text="fejuggayoungstars@gmail.com"
-        />
-      </View>
-      <View style={[styles.social1, { backgroundColor: "#E2B801" }]}>
-        <View style={[styles.icon, { backgroundColor: "#E2B801" }]}>
-          <FontAwesome
-            name="whatsapp"
-            size={24}
-            color="#E2B801"
-            style={{ backgroundColor: "#fff", padding: 5, borderRadius: 20 }}
+        <View style={[styles.social1, { backgroundColor: "#E2B801" }]}>
+          <View style={[styles.icon, { backgroundColor: "#E2B801" }]}>
+            <FontAwesome
+              name="whatsapp"
+              size={24}
+              color="#E2B801"
+              style={{ backgroundColor: "#fff", padding: 5, borderRadius: 20 }}
+            />
+          </View>
+          <SocialLink
+            url="whatsapp://send?phone=+2347026178387"
+            text="Message me on WhatApp"
+          ></SocialLink>
+        </View>
+        <View style={[styles.social1, { backgroundColor: "#6C3805" }]}>
+          <View style={[styles.icon, { backgroundColor: "#6C3805" }]}>
+            <Foundation
+              name="web"
+              size={24}
+              color="#6C3805"
+              style={{
+                backgroundColor: "#fff",
+                padding: 5,
+                paddingHorizontal: 10,
+                borderRadius: 20,
+              }}
+            />
+          </View>
+          <SocialLink
+            url="http://dtoothfairy.com"
+            text="http://dtoothfairy.com"
           />
         </View>
-        <SocialLink
-          url="whatsapp://send?phone=+2347026178387"
-          text="Message me on WhatApp"
-        ></SocialLink>
       </View>
-      <View style={[styles.social1, { backgroundColor: "#6C3805" }]}>
-        <View style={[styles.icon, { backgroundColor: "#6C3805" }]}>
-          <Foundation
-            name="web"
-            size={24}
-            color="#6C3805"
-            style={{
-              backgroundColor: "#fff",
-              padding: 5,
-              paddingHorizontal: 10,
-              borderRadius: 20,
-            }}
-          />
-        </View>
-        <SocialLink
-          url="http://dtoothfairy.com"
-          text="http://dtoothfairy.com"
-        />
-      </View>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -115,7 +121,9 @@ export default memo(aboutScreen);
 const styles = StyleSheet.create({
   aboutContainer: {
     width: wp("85%"),
+    height: hp("100%"),
     alignSelf: "center",
+    marginBottom: 30,
   },
   box: {
     backgroundColor: "rgba(226 184 1 / 0.5)",

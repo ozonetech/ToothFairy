@@ -21,6 +21,8 @@ import {
   addDoc,
   collection,
   getDocs,
+  query,
+  where,
 } from "firebase/firestore";
 import {
   ref,
@@ -137,7 +139,7 @@ export const AuthContextProvider = ({ children }) => {
       const usernameTaken = await isUsernameTaken(username);
 
       if (usernameTaken) {
-        return { error: "auth/username-taken" };
+        return { msg: "auth/username-taken" };
       }
       const response = await createUserWithEmailAndPassword(
         auth,
@@ -163,21 +165,25 @@ export const AuthContextProvider = ({ children }) => {
       if (msg.includes("(auth/invalid-email)")) msg = "Invalid email";
       if (msg.includes("auth/email-already-in-use"))
         msg = "Email already exist";
+      if (msg.includes("(auth/weak-password)"))
+        msg = "'Invalid Password', 'Must be at least 6 characters'";
+
       return { success: false, msg };
     }
   };
 
-  // Function to check if a username already exists
   const isUsernameTaken = async (username) => {
     try {
-      // Query the 'users' collection to check if a document with the given username exists
-      const docRef = doc(db, "users", username);
-      const docSnapshot = await getDoc(docRef);
+      // Query the 'users' collection to check if any document has the given username
+      const usersRef = collection(db, "users");
+      const querySnapshot = await getDocs(
+        query(usersRef, where("username", "==", username))
+      );
 
-      // If the document exists, the username is taken
-      return docSnapshot.exists();
+      // If there are any documents with the given username, it's taken
+      return !querySnapshot.empty;
     } catch (error) {
-      console.error("Error checking username:");
+      console.error("Error checking username:", error);
       throw error;
     }
   };
@@ -355,6 +361,7 @@ export const AuthContextProvider = ({ children }) => {
         userId: data.userId,
         profileImage: data.profileImage,
         email: data.email,
+        coin: data.coin,
       };
       await setDoc(userDocRef, updatedData, { merge: true });
       setUser({
@@ -364,6 +371,7 @@ export const AuthContextProvider = ({ children }) => {
         profileImage: userData.profileImage,
         username: userData.username,
         age: userData.age,
+        coin: userData.coin,
       });
       return updatedData; // Successful update
     } catch (error) {
@@ -431,7 +439,10 @@ export const AuthContextProvider = ({ children }) => {
       const userData = docSnap.data();
 
       // Calculate the updated coin value by adding the new coin to the previous coin
-      const updatedCoin = userData.coin + coin;
+      let updatedCoin = userData.coin + coin;
+
+      // Ensure that the updated coin value is formatted to two decimal places
+      updatedCoin = parseFloat(updatedCoin.toFixed(2));
 
       // Prepare the updated data
       const updatedUserData = {
